@@ -37,7 +37,7 @@ const SearchParams = () => {
                 {adoptedPet && (
                     <div className="image-container pet">
                         <img
-                            src={adoptedPet?.images[0]}
+                            src={adoptedPet?.images[adoptedPet.activeImage]}
                             alt={adoptedPet?.name}
                         />
                     </div>
