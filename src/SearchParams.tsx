@@ -1,11 +1,14 @@
-import { useContext, useState } from "react";
+import { FormEvent, useContext, useState } from "react";
+
+import { useQuery } from "@tanstack/react-query";
+
+import AdoptPetContext from "./AdoptPetContext";
 import useBreedList from "./useBreedList";
 import Results from "./Results";
-import { useQuery } from "@tanstack/react-query";
 import fetchSearch from "./fetchSearch";
-import AdoptPetContext from "./AdoptPetContext";
+import { Animal } from "./ApiResponsesTypes";
 
-const ANIMALS = ["bird", "cat", "dog", "rabbit", "reptile"];
+const ANIMALS: Animal[] = ["bird", "cat", "dog", "rabbit", "reptile"];
 
 const SearchParams = () => {
     const [requestParams, setRequestParams] = useState({
@@ -13,7 +16,7 @@ const SearchParams = () => {
         animal: "",
         breed: "",
     });
-    const [animal, setAnimal] = useState("");
+    const [animal, updateAnimal] = useState("" as Animal);
     const [breeds] = useBreedList(animal);
     const results = useQuery(["search", requestParams], fetchSearch);
     const [adoptedPet] = useContext(AdoptPetContext);
@@ -21,12 +24,12 @@ const SearchParams = () => {
     const pets = results?.data?.pets ?? [];
 
     return (
-        <div className="my-0 mx-auto w-11/12">
+        <div className="search-params">
             <form
-                className="p-10 mb-10 rounded-lg bg-gray-200 shadow-lg flex flex-col justify-center items-center"
-                onSubmit={(event) => {
+                className="container"
+                onSubmit={(event: FormEvent<HTMLFormElement>) => {
                     event.preventDefault();
-                    const formData = new FormData(event.target);
+                    const formData = new FormData(event.currentTarget);
                     const data = {
                         animal: formData.get("animal") ?? "",
                         breed: formData.get("breed") ?? "",
@@ -38,8 +41,8 @@ const SearchParams = () => {
                 {adoptedPet && (
                     <div className="image-container pet">
                         <img
-                            src={adoptedPet?.images[adoptedPet.activeImage]}
-                            alt={adoptedPet?.name}
+                            src={adoptedPet.images[adoptedPet.activeImage || 0]}
+                            alt={adoptedPet.name}
                         />
                     </div>
                 )}
@@ -58,7 +61,10 @@ const SearchParams = () => {
                     id="animal"
                     value={animal}
                     onChange={(event) => {
-                        setAnimal(event.target.value);
+                        updateAnimal(event.target.value as Animal);
+                    }}
+                    onBlur={(event) => {
+                        updateAnimal(event.target.value as Animal);
                     }}
                 >
                     {ANIMALS.map((animal) => (
